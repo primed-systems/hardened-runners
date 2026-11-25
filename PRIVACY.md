@@ -34,10 +34,12 @@ described in Microsoft's privacy statement.
 
 Support is handled in this repository's public issue tracker. Anything you write there is
 public, so leave out secrets, tokens, internal hostnames and anything else you would not want
-others to read.
+others to read. For anything private, including a security problem, write to
+support@primed-systems.com instead.
 
 ## Questions and requests
 
-To ask what we hold about you, or to have it corrected or deleted, contact <PRIVACY_CONTACT>.
+To ask what we hold about you, or to have it corrected or deleted, write to
+support@primed-systems.com.
 
 Last updated 2026-11-25.

@@ -20,4 +20,8 @@ Level 1 compliance posture as measured by OpenSCAP; it is not a certification. P
 not affiliated with, endorsed by or certified by CIS or Canonical. Ubuntu is a registered
 trademark of Canonical Ltd.
 
-The build code is in a private repository. Questions and problems: <SUPPORT_CHANNEL>.
+The build code is in a private repository.
+
+**Support.** Questions and problems: open an [issue](../../issues). Issues are public, so for
+anything private, including a security problem, write to support@primed-systems.com.
+How we handle data: [PRIVACY.md](PRIVACY.md).
