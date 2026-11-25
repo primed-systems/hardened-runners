@@ -1,8 +1,8 @@
 # Customer quickstart — deploy a Primed Hardened Runner
 
-> **Draft.** The Marketplace offer is not live yet. `<IMAGE_ID>`, `<PUBLISHER_ID>`, `<OFFER_ID>`
-> and `<PLAN_ID>` are placeholders, and the deploy commands below have not been run against
-> the published offer. This notice is removed when they have.
+> **Draft.** The Marketplace offer is in Microsoft's review and is not live yet. The deploy
+> commands below have not been run against the published offer. This notice is removed when
+> they have.
 
 Deploy the image, then register it as a **GitHub Actions self-hosted runner** or an **Azure DevOps
 self-hosted agent**. The deploy steps and the registration command are shared; the config says
@@ -54,44 +54,45 @@ You need:
 
 ## Step 1 — Get access to the image
 
-The image is sold on the Azure Marketplace as **Hardened GitHub Actions Runner & Azure DevOps
-Agent**, publisher Primed Systems. Its identifiers:
+The image is sold on the Azure Marketplace as **Hardened Self-Hosted GitHub Actions Runner & Azure
+DevOps Agent**, publisher Primed Systems. Its identifiers:
 
-```
-publisher: <PUBLISHER_ID>
-offer:     <OFFER_ID>
-plan:      <PLAN_ID>
-```
+| | |
+|---|---|
+| Publisher | `primed-systems` |
+| Offer | `hardened-runners` |
+| Plan | `ubuntu-2404` |
+| Version | `1.0.4`, or `latest` |
 
-Accept the terms once per subscription, then use the image by those identifiers:
+As one string: `primed-systems:hardened-runners:ubuntu-2404:1.0.4`.
+
+Accept the Marketplace terms once per subscription:
 
 ```bash
-az vm image terms accept --publisher <PUBLISHER_ID> --offer <OFFER_ID> --plan <PLAN_ID>
+az vm image terms accept --publisher primed-systems --offer hardened-runners --plan ubuntu-2404
 ```
 
-Image versions are **immutable**: a given version's bits never change.
-
-> **UNVERIFIED:** the identifiers above and the `--plan-*` arguments in Step 2 are placeholders
-> until the Marketplace offer is live. Confirmed by: deploying a VM from the published offer.
+Image versions are **immutable**: a given version's bits never change. Use an exact version such
+as `1.0.4` when you want the VM to match one release's published evidence; `latest` picks up each
+new release.
 
 ## Step 2 — Create the VM
 
-Trusted Launch with Secure Boot and vTPM is the boot configuration this image is built, scanned,
-and functionally tested under — keep these flags. Ubuntu 1.0.4 does not force Trusted Launch: its
-image definition is `TrustedLaunchSupported`, so a VM created without it does not match the
-configuration measured by the published evidence. This exception was accepted for 1.0.0 on
-2026-09-28 and, from 2026-10-07, stands for all later releases; deploy with the Trusted Launch flags below.
+Trusted Launch with Secure Boot and vTPM is the boot configuration this image is built, scanned
+and functionally tested under. Keep these flags, so that your VM matches the configuration the
+published evidence describes.
 
 ```bash
 RG=rg-my-runners
 VM=runner-01
-IMG_ID="<IMAGE_ID>"
+IMAGE="primed-systems:hardened-runners:ubuntu-2404:1.0.4"
 
 az group create -g "$RG" -l southcentralus -o none
 
 az vm create \
   -g "$RG" -n "$VM" \
-  --image "$IMG_ID" \
+  --image "$IMAGE" \
+  --plan-publisher primed-systems --plan-product hardened-runners --plan-name ubuntu-2404 \
   --size Standard_D4ads_v7 \
   --security-type TrustedLaunch --enable-secure-boot true --enable-vtpm true \
   --public-ip-address "" --nsg-rule NONE \
@@ -99,21 +100,15 @@ az vm create \
   -o none
 ```
 
-These arguments are the certification harness's own VM-create arguments
-(`certification/g4-certify.sh:362-368`), minus the per-run VNET pinning it uses for test isolation.
+> **UNVERIFIED:** this exact command against the Marketplace offer, and which regions the offer
+> can be deployed in. The same arguments, with the image taken from our own gallery instead of
+> the Marketplace, are what our release tests use. Confirmed by: running it against the offer.
 
 - `--public-ip-address ""` and `--nsg-rule NONE` give the runner **no public IP and no inbound NSG
   rule**. The agent dials out; nothing needs to dial in. Keep it this way unless you have a reason
   not to.
-- `--size Standard_D4ads_v7` is the SKU this image is built and functionally tested on. Others will
-  work; this is the proven one.
-- **Region must match a region the image version is replicated to.** A gallery image version can
-  only create VMs in regions it has been replicated into. The build publishes to `southcentralus`
-  (`packer/ubuntu/templates/variable.ubuntu.pkr.hcl:88-90`) and the template sets no additional
-  replication targets, so `southcentralus` is the region to use.
-
-> **UNVERIFIED:** which regions the published offer is available in. Confirmed by: the
-> offer's page on the Azure Marketplace once it is live.
+- `--size Standard_D4ads_v7` is the size this image is built and functionally tested on. Others
+  will work; this is the proven one.
 - `--generate-ssh-keys` creates a key pair. The image's firewall allows inbound SSH (Ubuntu 1.0.3
   and earlier: it does not), so your network decides who can reach port 22. With no public IP
   and no inbound NSG rule, that is still every machine Azure's default rules allow, which

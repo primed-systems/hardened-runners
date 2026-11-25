@@ -1,8 +1,8 @@
 # Hardened GitHub Actions Runner & Azure DevOps Agent
 
-> **Draft.** The Marketplace offer is not live yet. `<IMAGE_ID>`, `<PUBLISHER_ID>`, `<OFFER_ID>`
-> and `<PLAN_ID>` are placeholders, and the deploy commands below have not been run against
-> the published offer. This notice is removed when they have.
+> **Draft.** The Marketplace offer is in Microsoft's review and is not live yet. The deploy
+> commands below have not been run against the published offer. This notice is removed when
+> they have.
 
 Documentation and release evidence for the Primed Systems hardened runner image, sold on the
 Azure Marketplace.
