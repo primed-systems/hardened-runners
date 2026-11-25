@@ -3,10 +3,10 @@
 // The registration credential never passes through this template: you put it in the vault
 // yourself between the two deployments (see ../README.md).
 
-@description('Resource ID of the image version: <IMAGE_ID>')
-param imageId string
+@description('Marketplace image version. An exact version matches one release\'s published evidence; latest follows new releases.')
+param imageVersion string = '1.0.4'
 
-@description('Must be a region the image version is replicated to.')
+@description('The Azure region to deploy in.')
 param location string = resourceGroup().location
 
 param vmName string = 'runner-01'
@@ -170,6 +170,13 @@ write_files:
 resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = if (deployVm) {
   name: vmName
   location: location
+  // The Marketplace purchase plan. Accept the terms once per subscription first:
+  //   az vm image terms accept --publisher primed-systems --offer hardened-runners --plan ubuntu-2404
+  plan: {
+    publisher: 'primed-systems'
+    product: 'hardened-runners'
+    name: 'ubuntu-2404'
+  }
   identity: attachIdentity
     ? {
         type: 'UserAssigned'
@@ -194,7 +201,10 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = if (deployVm) {
     }
     storageProfile: {
       imageReference: {
-        id: imageId
+        publisher: 'primed-systems'
+        offer: 'hardened-runners'
+        sku: 'ubuntu-2404'
+        version: imageVersion
       }
       osDisk: {
         createOption: 'FromImage'

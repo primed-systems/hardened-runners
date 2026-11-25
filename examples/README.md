@@ -1,8 +1,8 @@
 # Copy-and-paste examples: one runner VM with Terraform or Bicep
 
-> **Draft.** The Marketplace offer is not live yet. `<IMAGE_ID>`, `<PUBLISHER_ID>`, `<OFFER_ID>`
-> and `<PLAN_ID>` are placeholders, and the deploy commands below have not been run against
-> the published offer. This notice is removed when they have.
+> **Draft.** The Marketplace offer is in Microsoft's review and is not live yet. The deploy
+> commands below have not been run against the published offer. This notice is removed when
+> they have.
 
 Both examples create what [the quickstart](../docs/QUICKSTART.md) creates by hand: a VM from the
 Primed Hardened Runner image (Trusted Launch, no public IP, no inbound rule), a managed identity
@@ -21,13 +21,16 @@ You put it in the vault yourself, between two runs:
 Each run is recorded in your variables file, not on the command line, so that a later run of the
 same command keeps the VM and keeps the identity detached.
 
-You need access to the image version (quickstart Step 1) and its resource ID. The VM must be able
-to reach GitHub or Azure DevOps and your vault outbound (quickstart, "Network prerequisites").
+Accept the Marketplace terms for the image once per subscription first (quickstart Step 1). The VM
+must be able to reach GitHub or Azure DevOps and your vault outbound (quickstart, "Network
+prerequisites").
 
 **What has been run.** On 2026-11-18 both examples were deployed as written against Ubuntu 1.0.3
 for GitHub (Terraform 1.17.2 with azurerm 4.81.0; Bicep 0.41.2 with Azure CLI 2.92.0). Each VM
 registered itself at first boot with `PRIMED_REGISTER=OK`, and stayed online after step 4. The
-Azure DevOps setting (`platform = "azdo"`) uses the same files but has not been deployed.
+Azure DevOps setting (`platform = "azdo"`) uses the same files but has not been deployed. Since
+then the image source in both files was changed from our own gallery to the Marketplace image and
+its purchase plan; that change has been checked for syntax only and not yet deployed.
 
 ## Terraform
 
@@ -35,7 +38,7 @@ Azure DevOps setting (`platform = "azdo"`) uses the same files but has not been 
 
 ```hcl
 subscription_id      = "<SUBSCRIPTION_ID>"
-image_id             = "<IMAGE_ID>"
+image_version        = "1.0.4"                  # optional; this is the default
 key_vault_name       = "kv-my-runners"          # must be globally unique
 admin_ssh_public_key = "ssh-ed25519 AAAA... you@example"
 platform             = "github"                 # or "azdo"
@@ -73,7 +76,6 @@ step 2 as that same account.
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "imageId": {"value": "<IMAGE_ID>"},
     "keyVaultName": {"value": "kv-my-runners"},
     "adminSshPublicKey": {"value": "ssh-ed25519 AAAA... you@example"},
     "operatorObjectId": {"value": "<output of: az ad signed-in-user show --query id -o tsv>"},
