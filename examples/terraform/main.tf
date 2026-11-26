@@ -29,7 +29,7 @@ variable "subscription_id" {
 
 variable "image_version" {
   type        = string
-  default     = "1.0.4"
+  default     = "1.0.5"
   description = "Marketplace image version. An exact version matches one release's published evidence; \"latest\" follows new releases."
 }
 

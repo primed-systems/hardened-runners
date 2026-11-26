@@ -4,7 +4,7 @@
 // yourself between the two deployments (see ../README.md).
 
 @description('Marketplace image version. An exact version matches one release\'s published evidence; latest follows new releases.')
-param imageVersion string = '1.0.4'
+param imageVersion string = '1.0.5'
 
 @description('The Azure region to deploy in.')
 param location string = resourceGroup().location
