@@ -62,9 +62,9 @@ DevOps Agent**, publisher Primed Systems. Its identifiers:
 | Publisher | `primed-systems` |
 | Offer | `hardened-runners` |
 | Plan | `ubuntu-2404` |
-| Version | `1.0.5`, or `latest` |
+| Version | `1.0.6`, or `latest` |
 
-As one string: `primed-systems:hardened-runners:ubuntu-2404:1.0.5`.
+As one string: `primed-systems:hardened-runners:ubuntu-2404:1.0.6`.
 
 Accept the Marketplace terms once per subscription:
 
@@ -73,7 +73,7 @@ az vm image terms accept --publisher primed-systems --offer hardened-runners --p
 ```
 
 Image versions are **immutable**: a given version's bits never change. Use an exact version such
-as `1.0.5` when you want the VM to match one release's published evidence; `latest` picks up each
+as `1.0.6` when you want the VM to match one release's published evidence; `latest` picks up each
 new release.
 
 ## Step 2 — Create the VM
@@ -85,7 +85,7 @@ published evidence describes.
 ```bash
 RG=rg-my-runners
 VM=runner-01
-IMAGE="primed-systems:hardened-runners:ubuntu-2404:1.0.5"
+IMAGE="primed-systems:hardened-runners:ubuntu-2404:1.0.6"
 
 az group create -g "$RG" -l southcentralus -o none
 
@@ -144,17 +144,21 @@ az vm run-command invoke -g "$RG" -n "$VM" \
 ```
 
 `build-metadata.json` binds the running image to the certified build and its source commit. Ubuntu
-1.0.5 is a gallery copy of build 0.0.49 with the same bits; builds keep `0.0.N` numbering while
-product releases use SemVer. Its `image_version` therefore reads `0.0.49`, not `1.0.5`. Map that
-build to the product version through the `primed-hardened-ubuntu/1.0.5` gallery version tags
-`productVersion=1.0.5` and `build=0.0.49`, the Ubuntu row in `docs/evidence/RELEASED.json`
-(version `1.0.5`, build `0.0.49`), and `docs/evidence/ubuntu/releases/1.0.5.json`. The GitHub
-release `ubuntu-2404-v1.0.5` is titled `ubuntu-2404 1.0.5 (build 0.0.49)`. Earlier releases remain
-available as `ubuntu-2404-v1.0.4` (build 0.0.46), `ubuntu-2404-v1.0.3` (build 0.0.43),
+1.0.6 is a gallery copy of build 0.0.50 with the same bits; builds keep `0.0.N` numbering while
+product releases use SemVer. Its `image_version` therefore reads `0.0.50`, not `1.0.6`. Map that
+build to the product version through the `primed-hardened-ubuntu/1.0.6` gallery version tags
+`productVersion=1.0.6` and `build=0.0.50`, the Ubuntu row in `docs/evidence/RELEASED.json`
+(version `1.0.6`, build `0.0.50`), and `docs/evidence/ubuntu/releases/1.0.6.json`. The GitHub
+release `ubuntu-2404-v1.0.6` is titled `ubuntu-2404 1.0.6 (build 0.0.50)`. Earlier releases remain
+available as `ubuntu-2404-v1.0.5` (build 0.0.49), `ubuntu-2404-v1.0.4` (build 0.0.46),
+`ubuntu-2404-v1.0.3` (build 0.0.43),
 `ubuntu-2404-v1.0.2` (build 0.0.37), `ubuntu-2404-v1.0.1` (build 0.0.36) and `ubuntu-2404-v1.0.0`
-(build 0.0.30). Build 0.0.49 moves Chrome and Edge to 158, leaves out the PHP `imagick` extension
-and five .NET SDKs that get no more updates (8.0.206, 8.0.319, 9.0.205, 10.0.204 and 10.0.303),
-and gives Packer and Terraform each their own licence file under `/usr/share/doc/`; build 0.0.46
+(build 0.0.30). Build 0.0.50 removes .NET 8 and .NET 9, which reached end of life on
+2026-11-10, leaving SDKs 10.0.115, 10.0.404 and 11.0.100 (see [.NET 8 and 9](#net-8-and-9)), and
+moves Edge to 158.0.4370.45; build 0.0.49 moved Chrome and Edge to 158, left out the PHP
+`imagick` extension and five .NET SDKs that get no more updates (8.0.206, 8.0.319, 9.0.205,
+10.0.204 and 10.0.303), and gave Packer and Terraform each their own licence file under
+`/usr/share/doc/`; build 0.0.46
 started from a newer Ubuntu base (`24.04.202611170`, kernel 7.0.0-1020), pre-staged GitHub runner
 2.338.2 and Azure DevOps agent 5.282.0, and was the first release that gave jobs sudo and Docker
 by default and shipped an inbound SSH rule in its firewall; build 0.0.43 installed Chrome, chromedriver
@@ -166,7 +170,7 @@ the image: `/opt/compliance/` holds `build-metadata.json` and a build-time `owne
 record, nothing else. The OpenSCAP ARF scan result, an SPDX SBOM of the OS packages (the dpkg
 inventory; it does not list the CI tools or the agents), the deviations register, and an evidence
 manifest with SHA-256 for each file are in the signed release bundle (next section) and in
-`docs/evidence/ubuntu/0.0.49/`. Releases up to 1.0.2 also carried those files inside the image.
+`docs/evidence/ubuntu/0.0.50/`. Releases up to 1.0.2 also carried those files inside the image.
 
 The pre-staged agent packages and their pin record:
 
@@ -181,14 +185,14 @@ Each record carries `id`, `version`, `sha256`, `archive`, `archive_path`, and `t
 at build time from the toolset manifest and re-asserted against it
 (`packer/common/install-agent-packages.sh`).
 
-## Verify the Ubuntu 1.0.5 release evidence
+## Verify the Ubuntu 1.0.6 release evidence
 
 Download the release assets, then verify the evidence tarball and its attestation:
 
 ```bash
-gh release download ubuntu-2404-v1.0.5 --repo primed-systems/hardened-runners
-cosign verify-blob --certificate-identity https://github.com/primed-systems/primed-hardened-runners/.github/workflows/release.yml@refs/heads/main --certificate-oidc-issuer https://token.actions.githubusercontent.com --bundle evidence-ubuntu-2404-1.0.5.sigstore.json evidence-ubuntu-2404-1.0.5.tar.gz
-cosign verify-blob-attestation --type custom --certificate-identity https://github.com/primed-systems/primed-hardened-runners/.github/workflows/release.yml@refs/heads/main --certificate-oidc-issuer https://token.actions.githubusercontent.com --bundle evidence-ubuntu-2404-1.0.5.attestation.sigstore.json evidence-ubuntu-2404-1.0.5.tar.gz
+gh release download ubuntu-2404-v1.0.6 --repo primed-systems/hardened-runners
+cosign verify-blob --certificate-identity https://github.com/primed-systems/primed-hardened-runners/.github/workflows/release.yml@refs/heads/main --certificate-oidc-issuer https://token.actions.githubusercontent.com --bundle evidence-ubuntu-2404-1.0.6.sigstore.json evidence-ubuntu-2404-1.0.6.tar.gz
+cosign verify-blob-attestation --type custom --certificate-identity https://github.com/primed-systems/primed-hardened-runners/.github/workflows/release.yml@refs/heads/main --certificate-oidc-issuer https://token.actions.githubusercontent.com --bundle evidence-ubuntu-2404-1.0.6.attestation.sigstore.json evidence-ubuntu-2404-1.0.6.tar.gz
 ```
 
 ---
@@ -207,11 +211,11 @@ This is exactly the path the certification legs run on every Ubuntu image versio
 entrypoint (`certification/sut/bootstrap-agent.sh`, `bootstrap-gh-runner.sh`: they write this config
 and invoke this command with `token_source: vault`).
 
-Proven live on release build 0.0.49 through `token_source: vault` with Run Command delivery, with
-sudo on, which is the default from 1.0.4. The GitHub path passed certify run 45652543528
-(`sudo=true`). The Azure DevOps path passed in build run 45636695836's external-test job,
+Proven live on release build 0.0.50 through `token_source: vault` with Run Command delivery, with
+sudo on, which is the default from 1.0.4. The GitHub path passed certify run 46042357485
+(`sudo=true`). The Azure DevOps path passed in build run 46031359420's external-test job,
 including its AC7 decoy (`PRIMED_AC7=PASS`, `PRIMED_AC7_DEMANDS=COVERED`;
-`docs/evidence/ubuntu/0.0.49/certify.sentinels.txt`). In both, the test job had to show `sudo`
+`docs/evidence/ubuntu/0.0.50/certify.sentinels.txt`). In both, the test job had to show `sudo`
 working for `primed-agent` before the test could pass. Sudo off was last proven live on build
 0.0.43, where off was still the default (certify run 43969292966, `sudo=false`). UNVERIFIED:
 turning sudo off with `"sudo": false` on 1.0.4 or later is covered by offline tests only and has not run
@@ -647,6 +651,25 @@ such as pull requests from forks, on ephemeral VMs. `corepack enable` fails for 
 `npm install -g`: it writes its shims into `/usr/local/bin`. Installing a further .NET SDK into
 `/usr/share/dotnet` fails too, because that folder is read-only to the agent; the preinstalled
 SDKs work.
+
+### .NET 8 and 9
+
+From 1.0.6 the image has no .NET 8 or 9: both reached end of life on 2026-11-10. The SDKs are
+10.0.115, 10.0.404 and 11.0.100, with runtimes 10.0.15 and 11.0.0. They still build projects that
+target `net8.0` or `net9.0`; running or testing those builds needs the matching runtime, which a
+job installs into a folder it owns. Microsoft's install script does this:
+
+```bash
+curl -fsSL https://dot.net/v1/dotnet-install.sh -o "$RUNNER_TEMP/dotnet-install.sh"
+bash "$RUNNER_TEMP/dotnet-install.sh" --channel 8.0 --runtime dotnet --install-dir "$RUNNER_TEMP/dotnet8"
+DOTNET_ROOT="$RUNNER_TEMP/dotnet8" "$RUNNER_TEMP/dotnet8/dotnet" path/to/app.dll
+```
+
+Tested on a VM from build 0.0.50 as a non-root user: runtime 8.0.34 installed, a `net8.0` console
+app built with the image's SDK and ran on it. On Azure DevOps use `$(Agent.TempDirectory)` in place
+of `$RUNNER_TEMP`. UNVERIFIED: `actions/setup-dotnet` with `DOTNET_INSTALL_DIR` set to a writable
+folder should do the same on GitHub; it has not been run on this image. Out-of-support runtimes get
+no security fixes, which is why the image does not carry them.
 
 **With `"sudo": false`, jobs cannot use `sudo`.** `primed-agent` then has no sudo rule, so
 `sudo apt-get install …` fails with `sudo: a password is required`, and

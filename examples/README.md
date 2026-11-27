@@ -38,7 +38,7 @@ its purchase plan; that change has been checked for syntax only and not yet depl
 
 ```hcl
 subscription_id      = "<SUBSCRIPTION_ID>"
-image_version        = "1.0.5"                  # optional; this is the default
+image_version        = "1.0.6"                  # optional; this is the default
 key_vault_name       = "kv-my-runners"          # must be globally unique
 admin_ssh_public_key = "ssh-ed25519 AAAA... you@example"
 platform             = "github"                 # or "azdo"
